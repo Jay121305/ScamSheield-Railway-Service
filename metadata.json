@@ -1,0 +1,7 @@
+{
+  "name": "ScamShield Rail SDAM CP",
+  "description": "A platform for train passengers to report food overpricing and quality issues, leveraging AI for analysis and validation.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
