@@ -1,14 +1,8 @@
-
 import { useState } from 'react';
 
-interface Geolocation {
-  lat: number;
-  lng: number;
-}
-
 export const useGeolocation = () => {
-  const [location, setLocation] = useState<Geolocation | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [location, setLocation] = useState(null);
+  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const getLocation = () => {
@@ -31,7 +25,7 @@ export const useGeolocation = () => {
       (err) => {
         setError(`Failed to get location: ${err.message}`);
         setLoading(false);
-      }
+      },
     );
   };
 
