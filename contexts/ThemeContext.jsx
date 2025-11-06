@@ -18,7 +18,11 @@ export const ThemeProvider = ({ children }) => {
     const root = document.documentElement;
     const body = document.body;
 
-    root.classList.toggle('dark', theme === 'dark');
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
 
     body.style.backgroundColor = theme === 'dark' ? '#0f172a' : '#f8fafc';
     body.style.color = theme === 'dark' ? '#e2e8f0' : '#1e293b';
@@ -27,16 +31,6 @@ export const ThemeProvider = ({ children }) => {
 
     localStorage.setItem('theme', theme);
   }, [theme]);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = (event) => {
-      setTheme(event.matches ? 'dark' : 'light');
-    };
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
-  }, []);
 
   const toggleTheme = () => {
     setTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light'));
