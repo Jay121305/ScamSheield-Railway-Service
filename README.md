@@ -5,19 +5,19 @@ A multi-language, polyglot application for Indian railway passengers to report f
 ## 📸 Application Screenshots
 
 ### Login Screen
-![Login Screen](https://github.com/user-attachments/assets/login-screen.png)
+![image2](assets/image2.png)
 *Simple email-based authentication with dark theme support*
 
 ### Complaint List Dashboard
-![Complaint Dashboard](https://github.com/user-attachments/assets/complaint-list.png)
+![image1](assets/image1.png)
 *Browse recent complaints with status indicators, voting counts, and overcharge detection*
 
 ### Complaint Details View
-![Complaint Details](https://github.com/user-attachments/assets/complaint-detail.png)
+![image4](assets/image4.png)
 *Detailed complaint view with AI analysis, community validation, and location tracking*
 
 ### File Complaint Form
-![File Complaint](https://github.com/user-attachments/assets/file-complaint.png)
+![image3](assets/image3.png)
 *Easy-to-use form with AI-powered analysis and evidence upload*
 
 ## � Key Features
