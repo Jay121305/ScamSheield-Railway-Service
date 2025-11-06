@@ -5,19 +5,19 @@ A multi-language, polyglot application for Indian railway passengers to report f
 ## 📸 Application Screenshots
 
 ### Login Screen
-![Login Screen](https://github.com/user-attachments/assets/login-screen.png)
+![Login Screen](https://github.com/Jay121305/ScamSheield-Railway-Service/blob/main/assets/Screenshot%202025-11-06%20093629.png)
 *Simple email-based authentication with dark theme support*
 
 ### Complaint List Dashboard
-![Complaint Dashboard](https://github.com/user-attachments/assets/complaint-list.png)
+![Complaint Dashboard](https://github.com/Jay121305/ScamSheield-Railway-Service/blob/main/assets/Screenshot%202025-11-06%20093645.png)
 *Browse recent complaints with status indicators, voting counts, and overcharge detection*
 
 ### Complaint Details View
-![Complaint Details](https://github.com/user-attachments/assets/complaint-detail.png)
+![Complaint Details](https://github.com/Jay121305/ScamSheield-Railway-Service/blob/main/assets/Screenshot%202025-11-06%20093709.png)
 *Detailed complaint view with AI analysis, community validation, and location tracking*
 
 ### File Complaint Form
-![File Complaint](https://github.com/user-attachments/assets/file-complaint.png)
+![File Complaint](https://github.com/Jay121305/ScamSheield-Railway-Service/blob/main/assets/Screenshot%202025-11-06%20093737.png)
 *Easy-to-use form with AI-powered analysis and evidence upload*
 
 ## � Key Features
