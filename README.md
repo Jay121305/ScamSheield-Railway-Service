@@ -110,6 +110,53 @@ A multi-language, polyglot application for Indian railway passengers to report f
 └─────────────────────────────────────────────────────────────┘
 ```
 
+## 🏗️ Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     Frontend Layer (Port 3000)              │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │  React 19.2.0 + Vite 6.4.1 (JavaScript)              │  │
+│  │  ├─ Complaint Management UI                          │  │
+│  │  ├─ Backend API Integration                          │  │
+│  │  ├─ Dark/Light Theme Toggle                          │  │
+│  │  ├─ Real-time Validation Display                     │  │
+│  │  ├─ Trust Score Visualization                        │  │
+│  │  └─ Tailwind CSS Styling                             │  │
+│  └──────────────────────────────────────────────────────┘  │
+│                         ↓ HTTP/REST API                     │
+└─────────────────────────────────────────────────────────────┘
+                          ↓
+┌─────────────────────────────────────────────────────────────┐
+│                     Backend Layer                           │
+│  ┌────────────────────────┐  ┌─────────────────────────┐   │
+│  │ Python Flask 3.0.0     │  │ Go 1.21 Microservice    │   │
+│  │ REST API (Port 5000)   │  │ File Service (Port 8080)│   │
+│  │ ├─ Complaint CRUD      │  │ ├─ File Validation      │   │
+│  │ ├─ Train Validation    │  │ ├─ Upload Handler       │   │
+│  │ ├─ IRCTC Pricing       │  │ ├─ Size/Type Checks     │   │
+│  │ ├─ Voting + Auto-ESC   │  │ └─ CORS Support         │   │
+│  │ ├─ Trust Scores        │  │                          │   │
+│  │ ├─ Similar Complaints  │  │                          │   │
+│  │ └─ Pattern Detection   │  │                          │   │
+│  └────────────────────────┘  └─────────────────────────┘   │
+│         │                                                    │
+│         ├─ 8 Train Schedules (Rajdhani, Vande Bharat, etc) │
+│         ├─ 40+ IRCTC Menu Items with Official Prices       │
+│         └─ Community Validation Algorithm (0-100 scores)    │
+└─────────────────────────────────────────────────────────────┘
+                          ↓
+┌─────────────────────────────────────────────────────────────┐
+│                   Deployment Layer                          │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │  Bash (deploy.sh) / Batch (deploy.bat)              │  │
+│  │  ├─ Multi-service orchestration                      │  │
+│  │  ├─ Dependency checks                                │  │
+│  │  └─ Build automation                                 │  │
+│  └──────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+```
+
 ## 🌐 Technology Stack
 
 ### Frontend (JavaScript)
@@ -118,6 +165,7 @@ A multi-language, polyglot application for Indian railway passengers to report f
 - **Styling**: Tailwind CSS (via CDN)
 - **Validation**: PropTypes 15.8.1
 - **State Management**: Context API (AuthContext, ThemeContext)
+- **API Client**: Custom fetch-based service (`apiService.js`)
 
 ### Backend (Python)
 - **Framework**: Flask 3.0.0
@@ -155,8 +203,10 @@ scamshield-rail/
 ├── contexts/                # React context providers
 │   ├── AuthContext.jsx
 │   └── ThemeContext.jsx
-├── services/                # Business logic
-│   └── geminiService.js     # Local complaint analysis
+├── services/                # Business logic & API clients
+│   ├── apiService.js        # Backend API integration
+│   ├── geminiService.js     # Local complaint analysis
+│   └── validationService.js # Community validation logic
 ├── hooks/                   # Custom React hooks
 │   └── useGeolocation.js
 ├── backend/                 # Python Flask API
@@ -184,7 +234,7 @@ scamshield-rail/
 - **Go** 1.21+ ([Download](https://go.dev/dl/)) *(optional)*
 - **Git** ([Download](https://git-scm.com/downloads))
 
-### Quick Start (3 Steps)
+### Quick Start (Frontend Only)
 
 #### Step 1: Clone and Install
 ```bash
@@ -204,7 +254,9 @@ npm run dev
 #### Step 3: Open Browser
 Visit **http://localhost:3000**
 
-You should see the login screen (first screenshot). Use any email to sign in as a passenger, or use `admin@example.com` for admin access.
+You should see the login screen. Use any email to sign in as a passenger, or use `admin@example.com` for admin access.
+
+> **Note**: Frontend works standalone with sample data. For full features (train validation, IRCTC pricing, trust scores), start the backend (see below).
 
 ### Full Installation (All Services)
 
@@ -247,16 +299,16 @@ cd ..
 npm run build
 ```
 
-### Running the Application
+### Running with Full Backend Integration
 
-Start all three services in separate terminals:
+For complete features including train validation, IRCTC pricing, and community validation, start all services:
 
 **Terminal 1 - Frontend (Port 3000)**
 ```bash
 npm run dev
 ```
 
-**Terminal 2 - Python API (Port 5000)**
+**Terminal 2 - Python Backend API (Port 5000)**
 ```bash
 cd backend
 python app.py
@@ -273,6 +325,9 @@ file-validator.exe
 ```
 
 Access the application at: **http://localhost:3000**
+
+✅ **Backend Connected**: No warning banner, full features active  
+⚠️ **Backend Offline**: Yellow warning banner, fallback to sample data
 
 ## �️ What You'll See
 
@@ -405,10 +460,14 @@ The application supports both dark and light themes:
 |---------|-------------|------------------|
 | **Browse Complaints** | View all recent complaints | Main dashboard after login |
 | **File Complaint** | Report a food vendor scam | Blue "File Complaint" button (top right) |
-| **AI Analysis** | Get instant complaint categorization | Purple "Analyze Complaint with AI" button in form |
+| **AI Analysis** | Get instant complaint categorization with train/price validation | Purple "Analyze Complaint with AI" button in form |
+| **Train Validation** | Verify train number against 8 major Indian trains | Auto-checked when analyzing complaint |
+| **Price Checking** | Compare charged price vs IRCTC official menu prices | Shows overcharge amount automatically |
 | **Upload Evidence** | Attach photos of the incident | Drag-and-drop zone in complaint form |
 | **Add Location** | Capture GPS coordinates | "Add Current Location" button in form |
 | **Vote on Complaints** | Upvote or downvote others' complaints | ↑ Upvote / ↓ Downvote buttons in detail view |
+| **View Trust Score** | See 0-100 credibility rating with breakdown | Trust Score section in complaint detail |
+| **Find Similar Complaints** | Discover pattern of scams | Similar Complaints section (when patterns detected) |
 | **View Details** | See full complaint analysis | Click any complaint card |
 | **Comment** | Discuss complaints | "Add your comment" in detail view |
 | **Sort Complaints** | Organize by date or popularity | "Sort by" dropdown (top right of dashboard) |
