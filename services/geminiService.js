@@ -1,3 +1,5 @@
+import { IRCTC_MENU_PRICES, TRAIN_SCHEDULES } from '../constants.js';
+
 const CATEGORY_PATTERNS = [
   {
     category: 'Overpricing',
@@ -115,7 +117,55 @@ const buildSummary = (description, category, itemName, vendorName, price) => {
   return `Passenger reports ${CATEGORY_DESCRIPTIONS[category]}${subject}${priceSuffix}. ${detail}`;
 };
 
-export const analyzeComplaintDescription = async (description) => {
+// Validate train number and get train info
+const validateTrain = (trainNumber) => {
+  if (!trainNumber) return null;
+  
+  const trainNum = trainNumber.toString().trim();
+  const trainInfo = TRAIN_SCHEDULES[trainNum];
+  
+  if (trainInfo) {
+    return {
+      valid: true,
+      ...trainInfo,
+      number: trainNum
+    };
+  }
+  
+  return {
+    valid: false,
+    number: trainNum,
+    name: 'Unknown Train',
+    pantryAvailable: null
+  };
+};
+
+// Lookup official IRCTC price for item
+const lookupIRCTCPrice = (itemName) => {
+  if (!itemName) return null;
+  
+  const lowerItem = itemName.toLowerCase();
+  
+  // Search through all categories
+  for (const category in IRCTC_MENU_PRICES) {
+    if (IRCTC_MENU_PRICES[category][lowerItem]) {
+      return IRCTC_MENU_PRICES[category][lowerItem];
+    }
+  }
+  
+  // Try partial match
+  for (const category in IRCTC_MENU_PRICES) {
+    for (const key in IRCTC_MENU_PRICES[category]) {
+      if (lowerItem.includes(key) || key.includes(lowerItem)) {
+        return IRCTC_MENU_PRICES[category][key];
+      }
+    }
+  }
+  
+  return null;
+};
+
+export const analyzeComplaintDescription = async (description, trainNumber = null, suggestedItem = null) => {
   const trimmed = description.trim();
   if (!trimmed) {
     return {
@@ -126,7 +176,7 @@ export const analyzeComplaintDescription = async (description) => {
   }
 
   const category = detectCategory(trimmed.toLowerCase());
-  const itemName = extractItem(trimmed);
+  const itemName = extractItem(trimmed) || suggestedItem;
   const vendorName = extractVendor(trimmed);
   const price = extractPrice(trimmed);
 
@@ -134,6 +184,23 @@ export const analyzeComplaintDescription = async (description) => {
   if (itemName) entities.itemName = itemName;
   if (vendorName) entities.vendorName = vendorName;
   if (typeof price === 'number') entities.price = price;
+
+  // Validate train if provided
+  let trainInfo = null;
+  if (trainNumber) {
+    trainInfo = validateTrain(trainNumber);
+    entities.trainInfo = trainInfo;
+  }
+  
+  // Lookup official IRCTC price
+  let irctcPrice = null;
+  if (itemName) {
+    irctcPrice = lookupIRCTCPrice(itemName);
+    if (irctcPrice) {
+      entities.irctcPrice = irctcPrice.price;
+      entities.irctcPriceDetails = irctcPrice;
+    }
+  }
 
   const summary = buildSummary(trimmed, category, itemName, vendorName, price);
 
@@ -143,5 +210,8 @@ export const analyzeComplaintDescription = async (description) => {
     summary,
     entities,
     category,
+    trainInfo,
+    irctcPrice: irctcPrice ? irctcPrice.price : null,
+    irctcPriceDetails: irctcPrice
   };
 };

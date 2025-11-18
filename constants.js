@@ -1,3 +1,128 @@
+// IRCTC Official Menu Pricing (2024-2025)
+export const IRCTC_MENU_PRICES = {
+  beverages: {
+    tea: { price: 10, item: 'Tea', category: 'Beverage' },
+    coffee: { price: 15, item: 'Coffee', category: 'Beverage' },
+    'cold drink': { price: 20, item: 'Cold Drink', category: 'Beverage' },
+    water: { price: 15, item: 'Water Bottle (1L)', category: 'Beverage' },
+    'mineral water': { price: 15, item: 'Mineral Water', category: 'Beverage' },
+    'water bottle': { price: 15, item: 'Water Bottle', category: 'Beverage' },
+    juice: { price: 30, item: 'Packaged Juice', category: 'Beverage' }
+  },
+  snacks: {
+    samosa: { price: 15, item: 'Samosa (2 pcs)', category: 'Snack' },
+    'vada pav': { price: 20, item: 'Vada Pav', category: 'Snack' },
+    pakora: { price: 25, item: 'Pakora', category: 'Snack' },
+    sandwich: { price: 40, item: 'Veg Sandwich', category: 'Snack' },
+    'veg sandwich': { price: 40, item: 'Veg Sandwich', category: 'Snack' },
+    burger: { price: 50, item: 'Veg Burger', category: 'Snack' },
+    chips: { price: 10, item: 'Chips', category: 'Snack' },
+    biscuits: { price: 10, item: 'Biscuits', category: 'Snack' }
+  },
+  meals: {
+    thali: { price: 120, item: 'Veg Thali', category: 'Meal' },
+    'veg thali': { price: 120, item: 'Veg Thali', category: 'Meal' },
+    'non-veg thali': { price: 150, item: 'Non-Veg Thali', category: 'Meal' },
+    'non veg thali': { price: 150, item: 'Non-Veg Thali', category: 'Meal' },
+    biryani: { price: 100, item: 'Veg Biryani', category: 'Meal' },
+    'chicken biryani': { price: 140, item: 'Chicken Biryani', category: 'Meal' },
+    'veg biryani': { price: 100, item: 'Veg Biryani', category: 'Meal' },
+    'fried rice': { price: 80, item: 'Fried Rice', category: 'Meal' },
+    paratha: { price: 30, item: 'Paratha (2 pcs)', category: 'Meal' }
+  },
+  breakfast: {
+    idli: { price: 40, item: 'Idli (4 pcs)', category: 'Breakfast' },
+    dosa: { price: 50, item: 'Dosa', category: 'Breakfast' },
+    upma: { price: 35, item: 'Upma', category: 'Breakfast' },
+    poha: { price: 30, item: 'Poha', category: 'Breakfast' }
+  }
+};
+
+// Major Indian Railway Train Schedules
+export const TRAIN_SCHEDULES = {
+  '12951': {
+    name: 'Mumbai Rajdhani',
+    route: 'Mumbai Central - New Delhi',
+    type: 'Rajdhani',
+    pantryAvailable: true,
+    mealIncluded: true,
+    stops: ['Mumbai Central', 'Vadodara', 'Ratlam', 'Kota', 'New Delhi']
+  },
+  '12301': {
+    name: 'Kolkata Rajdhani',
+    route: 'Howrah - New Delhi',
+    type: 'Rajdhani',
+    pantryAvailable: true,
+    mealIncluded: true,
+    stops: ['Howrah', 'Patna', 'Mughalsarai', 'Kanpur', 'New Delhi']
+  },
+  '22439': {
+    name: 'Vande Bharat Express',
+    route: 'New Delhi - Varanasi',
+    type: 'Vande Bharat',
+    pantryAvailable: true,
+    mealIncluded: true,
+    stops: ['New Delhi', 'Kanpur', 'Prayagraj', 'Varanasi']
+  },
+  '12138': {
+    name: 'Punjab Mail',
+    route: 'Mumbai CST - Firozpur',
+    type: 'Mail/Express',
+    pantryAvailable: true,
+    mealIncluded: false,
+    stops: ['Mumbai CST', 'Surat', 'Vadodara', 'Ahmedabad', 'Firozpur']
+  },
+  '12002': {
+    name: 'Bhopal Shatabdi',
+    route: 'New Delhi - Bhopal',
+    type: 'Shatabdi',
+    pantryAvailable: true,
+    mealIncluded: true,
+    stops: ['New Delhi', 'Agra', 'Gwalior', 'Bhopal']
+  },
+  '12009': {
+    name: 'Shatabdi Express',
+    route: 'Mumbai Central - Ahmedabad',
+    type: 'Shatabdi',
+    pantryAvailable: true,
+    mealIncluded: true,
+    stops: ['Mumbai Central', 'Surat', 'Vadodara', 'Ahmedabad']
+  },
+  '12626': {
+    name: 'Kerala Express',
+    route: 'New Delhi - Trivandrum',
+    type: 'Mail/Express',
+    pantryAvailable: true,
+    mealIncluded: false,
+    stops: ['New Delhi', 'Vadodara', 'Mumbai', 'Goa', 'Mangalore', 'Trivandrum']
+  },
+  '12430': {
+    name: 'Lucknow AC SF',
+    route: 'New Delhi - Lucknow',
+    type: 'Superfast',
+    pantryAvailable: true,
+    mealIncluded: false,
+    stops: ['New Delhi', 'Ghaziabad', 'Moradabad', 'Bareilly', 'Lucknow']
+  }
+};
+
+// Community Validation Thresholds
+export const VALIDATION_THRESHOLDS = {
+  VERIFIED: 10, // 10+ net upvotes = Verified complaint
+  ESCALATED: 25, // 25+ net upvotes = Auto-escalated
+  DISPUTED: -5, // -5 net votes = Disputed/questionable
+  TRUSTED_USER: 50, // Users with 50+ validated reports get trusted status
+  MODERATOR_REVIEW: 100 // 100+ upvotes trigger moderator review
+};
+
+// Validation Badges
+export const VALIDATION_BADGES = {
+  VERIFIED: { label: 'Community Verified', icon: '✓', color: 'green' },
+  DISPUTED: { label: 'Disputed', icon: '?', color: 'orange' },
+  TRENDING: { label: 'Trending', icon: '🔥', color: 'red' },
+  TRUSTED_REPORTER: { label: 'Trusted Reporter', icon: '⭐', color: 'blue' }
+};
+
 export const sampleUsers = [
   { id: 1, name: 'Rajesh Kumar', email: 'rajesh@example.com', role: 'passenger' },
   { id: 2, name: 'Priya Sharma', email: 'priya@example.com', role: 'passenger' },

@@ -443,29 +443,84 @@ The application supports both dark and light themes:
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/api/health` | Health check |
-| POST | `/api/analyze` | Analyze complaint text |
+| POST | `/api/analyze` | Analyze complaint with train & IRCTC price validation |
 | GET | `/api/complaints` | Get all complaints |
 | POST | `/api/complaints` | Create new complaint |
 | GET | `/api/complaints/:id` | Get complaint by ID |
 | PUT | `/api/complaints/:id` | Update complaint |
 | DELETE | `/api/complaints/:id` | Delete complaint |
-| POST | `/api/complaints/:id/vote` | Vote on complaint (upvote/downvote) |
+| POST | `/api/complaints/:id/vote` | Vote on complaint (upvote/downvote with auto-escalation) |
+| GET | `/api/complaints/:id/validation` | Get validation insights & similar complaints |
+| GET | `/api/trains/:number` | Get train schedule and pantry information |
+| GET | `/api/menu/:item` | Get official IRCTC menu price |
 
-**Example - Analyze Complaint:**
+**Example - Analyze Complaint with Train & Price Validation:**
 ```bash
 curl -X POST http://localhost:5000/api/analyze \
   -H "Content-Type: application/json" \
-  -d '{"description": "Overpriced samosa for Rs 80 with poor quality"}'
+  -d '{
+    "description": "Overpriced samosa for Rs 80",
+    "trainNumber": "12951",
+    "itemName": "samosa"
+  }'
 ```
 
 **Response:**
 ```json
 {
   "category": "Overpricing",
-  "confidence": "high",
-  "price": "Rs 80",
-  "item": "samosa",
-  "summary": "Overpricing issue detected for samosa at Rs 80"
+  "summary": "Passenger reports overpricing issue with samosa, charged ₹80 (₹65 over IRCTC price)...",
+  "entities": {
+    "itemName": "Samosa",
+    "price": 80,
+    "trainInfo": {
+      "valid": true,
+      "number": "12951",
+      "name": "Mumbai Rajdhani",
+      "route": "Mumbai Central - New Delhi",
+      "pantryAvailable": true
+    },
+    "irctcPrice": 15,
+    "irctcPriceDetails": {
+      "price": 15,
+      "item": "Samosa (2 pcs)",
+      "category": "Snack"
+    }
+  },
+  "trainInfo": { "valid": true, "name": "Mumbai Rajdhani" },
+  "irctcPrice": 15
+}
+```
+
+**Example - Get Validation Insights:**
+```bash
+curl http://localhost:5000/api/complaints/1/validation
+```
+
+**Response:**
+```json
+{
+  "validationStatus": {
+    "level": "verified",
+    "label": "Community Verified",
+    "autoEscalate": false
+  },
+  "netVotes": 13,
+  "trustScore": {
+    "score": 85,
+    "rating": "High",
+    "factors": [
+      {"factor": "Vote Ratio", "impact": "+25.7"},
+      {"factor": "Photo Evidence", "impact": "+15"}
+    ]
+  },
+  "similarComplaints": [
+    {"id": 4, "similarity": 75, "upvotes": 8}
+  ],
+  "recommendations": [
+    "✓ 3 similar complaints found - pattern detected!",
+    "⭐ High trust score - reliable complaint."
+  ]
 }
 ```
 
@@ -484,7 +539,51 @@ curl -X POST http://localhost:5000/api/analyze \
 
 ## 🧠 Analysis Features
 
-The complaint analysis system uses heuristic pattern matching to detect:
+The complaint analysis system uses heuristic pattern matching combined with official IRCTC data:
+
+### 🚂 Train Schedule Integration
+- **Train Validation**: Verifies train numbers against Indian Railways database
+- **Pantry Information**: Shows if pantry car is available on the train
+- **Route Details**: Displays complete train route and stops
+- **Train Types**: Identifies Rajdhani, Shatabdi, Vande Bharat, Mail/Express
+- **8 Major Trains**: Database includes popular routes (12951, 22439, 12138, etc.)
+
+### 💰 IRCTC Official Menu Pricing
+- **Real-time Price Lookup**: Matches items with official IRCTC menu prices
+- **Category-wise Pricing**: Beverages, Snacks, Meals, Breakfast
+- **40+ Menu Items**: Tea (₹10), Coffee (₹15), Samosa (₹15), Thali (₹120), etc.
+- **Automatic Overcharge Calculation**: Shows exact overcharge amount and percentage
+- **Example**: If charged ₹20 for tea (IRCTC: ₹10) → Shows "₹10 overcharge (100%)"
+
+### ✓ Community Validation System
+- **Net Vote Calculation**: Upvotes minus downvotes determines credibility
+- **Auto-Escalation**: 25+ net votes → Automatically escalates to "Escalated" status
+- **Verification Levels**:
+  - **Verified**: 10+ net votes - Community validated complaint
+  - **Escalated**: 25+ net votes - High-priority, auto-escalated
+  - **Disputed**: -5 or lower net votes - Questionable complaint
+  - **Pending**: Between -5 and 10 - Awaiting community feedback
+
+- **Trust Score Algorithm** (0-100):
+  - Base score: 50 points
+  - Vote ratio: Up to +30 points
+  - Photo evidence: +15 points
+  - GPS location: +10 points
+  - High engagement (20+ votes): +10 points
+  - Trusted reporter badge: +15 points
+
+- **Similar Complaint Detection**:
+  - Matches by train number (30% weight)
+  - Matches by vendor name (25% weight)
+  - Matches by food item (20% weight)
+  - Matches by price range (15% weight)
+  - Patterns identified when 3+ similar complaints found
+
+- **Validation Insights**:
+  - Real-time recommendations based on complaint analysis
+  - Cross-validation with similar complaints
+  - Trust score breakdown with contributing factors
+  - Auto-escalation notifications
 
 ### Category Detection
 - **Overpricing**: Keywords like "overpriced", "expensive", "costly", "₹", "Rs"
