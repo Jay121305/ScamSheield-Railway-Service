@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { Header } from './components/Header';
 import { ComplaintList } from './components/ComplaintList';
 import { ComplaintForm } from './components/ComplaintForm';
@@ -7,6 +7,7 @@ import { Login } from './components/auth/Login';
 import { AdminDashboard } from './components/admin/AdminDashboard';
 import { useAuth } from './contexts/AuthContext';
 import { sampleComplaints } from './constants';
+import { fetchComplaints, checkHealth } from './services/apiService';
 
 const buildTicketId = (count) => `SCAM-2024-${String(count).padStart(6, '0')}`;
 
@@ -16,6 +17,28 @@ const App = () => {
   const [complaints, setComplaints] = useState(sampleComplaints);
   const [selectedComplaint, setSelectedComplaint] = useState(null);
   const [sortBy, setSortBy] = useState('date');
+  const [backendConnected, setBackendConnected] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // Check backend connection and load complaints on mount
+  useEffect(() => {
+    const initializeApp = async () => {
+      try {
+        const health = await checkHealth();
+        if (health.status === 'healthy') {
+          setBackendConnected(true);
+          const data = await fetchComplaints();
+          setComplaints(data);
+        }
+      } catch (error) {
+        console.warn('Backend not available, using sample data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializeApp();
+  }, []);
 
   const handleViewChange = (newView, complaint = null) => {
     setView(newView);
@@ -192,6 +215,15 @@ const App = () => {
   return (
     <div className="min-h-screen bg-slate-100 dark:bg-slate-900 font-sans text-slate-800 dark:text-slate-200">
       <Header onNavigate={handleViewChange} />
+      {user && !backendConnected && !loading && (
+        <div className="container mx-auto px-4 pt-4">
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+            <p className="text-yellow-800 dark:text-yellow-200 text-sm">
+              ⚠️ Backend not connected. Using sample data. Start the backend: <code className="bg-yellow-100 dark:bg-yellow-800 px-2 py-1 rounded text-xs">cd backend && python app.py</code>
+            </p>
+          </div>
+        </div>
+      )}
       <main className="container mx-auto p-4 md:p-6">{renderContent()}</main>
       {user && (
         <footer className="text-center py-4 text-slate-500 dark:text-slate-400 text-sm">

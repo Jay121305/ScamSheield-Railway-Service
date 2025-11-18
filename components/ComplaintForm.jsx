@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useGeolocation } from '../hooks/useGeolocation';
+import { analyzeComplaint, getTrainInfo, getMenuPrice } from '../services/apiService';
 import { analyzeComplaintDescription } from '../services/geminiService';
 import { Spinner } from './common/Spinner';
 import { IconSparkles, IconUpload, IconMapPin } from './common/Icon';
@@ -44,8 +45,24 @@ export const ComplaintForm = ({ onSubmit, onCancel }) => {
     setAnalysisError(null);
     setAnalysisResult(null);
     try {
-      const result = await analyzeComplaintDescription(formData.description);
-      setAnalysisResult(result);
+      // Try backend API first
+      try {
+        const result = await analyzeComplaint(
+          formData.description,
+          formData.trainNo || null,
+          formData.itemName || null
+        );
+        setAnalysisResult(result);
+      } catch (apiError) {
+        // Fallback to local analysis
+        console.warn('Backend analysis failed, using local:', apiError);
+        const result = await analyzeComplaintDescription(
+          formData.description,
+          formData.trainNo || null,
+          formData.itemName || null
+        );
+        setAnalysisResult(result);
+      }
     } catch (error) {
       setAnalysisError('Failed to analyze the complaint. Please try again.');
       console.error(error);
@@ -188,6 +205,23 @@ export const ComplaintForm = ({ onSubmit, onCancel }) => {
                 <strong className="text-indigo-800 dark:text-indigo-300">Category:</strong>{' '}
                 {analysisResult.category}
               </p>
+              {analysisResult.trainInfo && (
+                <p>
+                  <strong className="text-indigo-800 dark:text-indigo-300">Train:</strong>{' '}
+                  {analysisResult.trainInfo.name} ({analysisResult.trainInfo.route})
+                </p>
+              )}
+              {analysisResult.irctcPrice && (
+                <p>
+                  <strong className="text-indigo-800 dark:text-indigo-300">IRCTC Price:</strong>{' '}
+                  ₹{analysisResult.irctcPrice}
+                  {formData.reportedPrice && analysisResult.irctcPrice < Number(formData.reportedPrice) && (
+                    <span className="text-red-600 dark:text-red-400 ml-2">
+                      (₹{(Number(formData.reportedPrice) - analysisResult.irctcPrice).toFixed(2)} overcharge!)
+                    </span>
+                  )}
+                </p>
+              )}
             </div>
           )}
         </div>

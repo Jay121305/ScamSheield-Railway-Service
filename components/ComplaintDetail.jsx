@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import {
   IconArrowLeft,
@@ -9,6 +9,7 @@ import {
   IconArrowDown,
 } from './common/Icon';
 import { useAuth } from '../contexts/AuthContext';
+import { voteOnComplaint, getValidationInsights } from '../services/apiService';
 
 const statusStyles = {
   Filed: 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/50 dark:text-blue-300 dark:border-blue-700',
@@ -62,9 +63,41 @@ CommentForm.propTypes = {
 };
 
 export const ComplaintDetail = ({ complaint, onBack, onVote, onAddComment }) => {
+  const [validationInsights, setValidationInsights] = useState(null);
+  const [loadingInsights, setLoadingInsights] = useState(false);
+  
   const priceDiff = complaint.mrp ? complaint.reportedPrice - complaint.mrp : null;
   const priceDiffPct =
     complaint.mrp ? (((complaint.reportedPrice - complaint.mrp) / complaint.mrp) * 100).toFixed(0) : null;
+
+  // Load validation insights when component mounts
+  useEffect(() => {
+    const loadInsights = async () => {
+      if (complaint.id) {
+        setLoadingInsights(true);
+        try {
+          const insights = await getValidationInsights(complaint.id);
+          setValidationInsights(insights);
+        } catch (error) {
+          console.warn('Could not load validation insights:', error);
+        } finally {
+          setLoadingInsights(false);
+        }
+      }
+    };
+    loadInsights();
+  }, [complaint.id]);
+
+  const handleVoteClick = async (voteType) => {
+    try {
+      // Try backend API first
+      await voteOnComplaint(complaint.id, voteType);
+    } catch (error) {
+      console.warn('Backend vote failed, using local:', error);
+    }
+    // Always call local handler
+    onVote(complaint.id, voteType);
+  };
 
   return (
     <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-4 sm:p-6 md:p-8">
@@ -139,21 +172,59 @@ export const ComplaintDetail = ({ complaint, onBack, onVote, onAddComment }) => 
             <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-2">Community Validation</h3>
             <div className="flex items-center space-x-4">
               <button
-                onClick={() => onVote(complaint.id, 'up')}
+                onClick={() => handleVoteClick('up')}
                 className="flex items-center space-x-2 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300 px-4 py-2 rounded-lg hover:bg-green-200 dark:hover:bg-green-900 transition"
               >
                 <IconArrowUp className="w-5 h-5" /> <span>Upvote</span>{' '}
                 <strong>({complaint.upvotes})</strong>
               </button>
               <button
-                onClick={() => onVote(complaint.id, 'down')}
+                onClick={() => handleVoteClick('down')}
                 className="flex items-center space-x-2 bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300 px-4 py-2 rounded-lg hover:bg-red-200 dark:hover:bg-red-900 transition"
               >
                 <IconArrowDown className="w-5 h-5" /> <span>Downvote</span>{' '}
                 <strong>({complaint.downvotes})</strong>
               </button>
             </div>
+            
+            {validationInsights && (
+              <div className="mt-4 space-y-3">
+                <div className="bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-lg">
+                  <p className="text-sm font-semibold text-indigo-800 dark:text-indigo-300">
+                    Trust Score: {validationInsights.trustScore?.score || 0}/100
+                  </p>
+                  {validationInsights.trustScore?.factors && (
+                    <div className="mt-2 text-xs text-indigo-700 dark:text-indigo-400 space-y-1">
+                      {validationInsights.trustScore.factors.voteRatio > 0 && (
+                        <p>✓ Vote ratio: +{validationInsights.trustScore.factors.voteRatio}</p>
+                      )}
+                      {validationInsights.trustScore.factors.hasEvidence && (
+                        <p>✓ Photo evidence: +15</p>
+                      )}
+                      {validationInsights.trustScore.factors.hasLocation && (
+                        <p>✓ GPS location: +10</p>
+                      )}
+                      {validationInsights.trustScore.factors.highEngagement && (
+                        <p>✓ High engagement: +10</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+                
+                {validationInsights.similarComplaints && validationInsights.similarComplaints.length > 0 && (
+                  <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg">
+                    <p className="text-sm font-semibold text-yellow-800 dark:text-yellow-300">
+                      Similar Complaints: {validationInsights.similarComplaints.length}
+                    </p>
+                    <p className="text-xs text-yellow-700 dark:text-yellow-400 mt-1">
+                      Pattern detected with other reports
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
+
           <div>
             <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-200">Summary</h3>
             <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-lg space-y-3">
